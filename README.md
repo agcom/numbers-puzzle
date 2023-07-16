@@ -25,3 +25,5 @@ Or
 ### Other Operating Systems, including Windows
 
 Figure it out :slightly_smiling_face:.
+
+> For Windows, you can also check out earlier release [v1.0.0](https://github.com/agcom/numbers-puzzle/releases/tag/v1.0.0) and follow the instructions said there.
