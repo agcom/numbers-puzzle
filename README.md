@@ -1,3 +1,5 @@
+:warning: Not maintained; but, feel free to fork it. :warning:
+
 # Numbers Puzzle
 
 Sliding numbers puzzle game in C, running on Windows cmd.exe.
