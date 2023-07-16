@@ -122,7 +122,7 @@ void drawBoard(int nums[ROWS][COLUMNS], char *graphics[ROW_CHARS][COLUMN_CHARS],
 
     }
 
-    printf(extras);
+    printf("%s", extras);
 
 }
 
@@ -328,7 +328,7 @@ int charToCommand(int c) {
 void win(long timer, int moves) {
 
     clear_screen();
-    printf("\r\n\nCongratulations!\r\n\nWon in %d seconds by %d moves!\r\n", timer, moves);
+    printf("\r\n\nCongratulations!\r\n\nWon in %ld seconds by %d moves!\r\n", timer, moves);
 
 }
 
@@ -352,7 +352,7 @@ void updateExtras(long timer, int moves, char extras[]) {
 
     if(TIME_LIMIT > 0) {
 
-        sprintf(extras, "\r\nTime remaining = %d\r\n\nMoves done = %d\r\n", TIME_LIMIT - timer, moves);
+        sprintf(extras, "\r\nTime remaining = %ld\r\n\nMoves done = %d\r\n", TIME_LIMIT - timer, moves);
 
     } else {
 
