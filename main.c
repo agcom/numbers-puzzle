@@ -14,7 +14,7 @@
 
 #define SHUFFLE_MOVES 1000 //how many times to simulate actual moves in the shuffle method
 #define INFINITE_LOOP_SLEEP_TIME 100 //time in milliseconds, how much to wait for each loop of while(1)
-#define TIME_LIMIT 10 //game's time limit in seconds, set to <= 0 for unlimited time
+#define TIME_LIMIT 3600 //game's time limit in seconds, set to <= 0 for unlimited time
 #define EXTRAS_SIZE 150 //max size of the string that always will be printed after the board
 
 #define AKCCM -32 //Arrow Key Char Code Modifier
