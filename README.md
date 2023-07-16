@@ -2,12 +2,26 @@
 
 Sliding numbers puzzle game in C, running on Windows cmd.exe.
 
-This game was my midterm project for the **computer fundamentals and programming** university course, made in late 2018.
+This game was my midterm project for the **computer fundamentals and programming** university course, originally made in **late 2018**.
 
 ![Screenshot](./Screenshot.png)
 
 ## Simple build & run
 
-Open the project in [Code::Blocks](https://www.codeblocks.org/) 17.12 (with MinGW) on a Windows OS, and hit Build and run.
+> Pro-tip: use an **IDE** to build and run the project; it will handle everything, probably.
 
-> Running the game might be cumbersome; because it is now a legacy software, and it is not packaged properly.
+### Ubuntu
+
+> Tested on Ubuntu 22.04 LTS.
+
+- `sudo apt install cmake gcc make libncurses-dev`
+- `cmake . && make && ./PacXon`
+
+Or
+
+- `sudo apt install gcc libncurses-dev`
+- `gcc main.c -lncurses && ./a.out`
+
+### Other Operating Systems, including Windows
+
+Figure it out :slightly_smiling_face:.

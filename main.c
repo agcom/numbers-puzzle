@@ -1,8 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <windows.h>
 #include <time.h>
 #include <string.h>
+#include <curses.h>
+
+#ifdef WINDOWS
+#include <windows.h>
+#define SLEEP_MS(x) Sleep(x)
+#else
+#include <unistd.h>
+#define SLEEP_MS(x) usleep((x) * 1000)
+#endif
 
 //dimensions of whole board
 #define ROWS 5
@@ -17,8 +25,7 @@
 #define TIME_LIMIT 3600 //game's time limit in seconds, set to <= 0 for unlimited time
 #define EXTRAS_SIZE 150 //max size of the string that always will be printed after the board
 
-#define AKCCM -32 //Arrow Key Char Code Modifier
-#define EKCC 13 //Enter Key Char Code
+#define EKC '\n' // Enter Key Code
 
 //------------------------------------------------------------//
 
@@ -50,10 +57,35 @@ void initNums(int nums[ROWS][COLUMNS]) {
 
 }
 
-//draws the whole board (graphics + numbers)
-void drawBoard(int nums[ROWS][COLUMNS], char graphics[ROW_CHARS][COLUMN_CHARS], char extras[]) {
+//returns count of n's digits
+int digitsCount(int n) {
+	
+	n = abs(n);
+	
+	int digits = 0;
+	do {
+		
+		n/=10;
+		digits++;
+		
+	} while(n != 0);
+	
+	return digits;
+	
+}
 
-    system("cls"); //clear the past drawn board
+void clear_screen() {
+#ifdef WINDOWS
+	system("cls");
+#else
+	system("clear");
+#endif
+}
+
+//draws the whole board (graphics + numbers)
+void drawBoard(int nums[ROWS][COLUMNS], char *graphics[ROW_CHARS][COLUMN_CHARS], char extras[]) {
+
+    clear_screen(); //clear the past drawn board
 
     //iteration over graphics
     int i;
@@ -62,7 +94,7 @@ void drawBoard(int nums[ROWS][COLUMNS], char graphics[ROW_CHARS][COLUMN_CHARS], 
         int j;
         for(j = 0; j < COLUMN_CHARS; j++) {
 
-            if(graphics[i][j] == '\0') { //number place
+            if(*graphics[i][j] == '\0') { //number place
 
                 int num = nums[(i - 1) / (ROOM_HEIGTH + 1)][(j - 1) / (ROOM_WIDTH + 1)], digits = digitsCount(num);
 
@@ -82,11 +114,11 @@ void drawBoard(int nums[ROWS][COLUMNS], char graphics[ROW_CHARS][COLUMN_CHARS], 
 
                 }
 
-            } else printf("%c", graphics[i][j]); //graphics place
+            } else printf("%s", graphics[i][j]); //graphics place
 
         }
 
-        printf("\n");
+        printf("\r\n");
 
     }
 
@@ -95,7 +127,7 @@ void drawBoard(int nums[ROWS][COLUMNS], char graphics[ROW_CHARS][COLUMN_CHARS], 
 }
 
 //initializes graphics array which contains borders
-void initGraphics(char graphics[ROW_CHARS][COLUMN_CHARS], int nums[ROWS][COLUMNS]) {
+void initGraphics(char *graphics[ROW_CHARS][COLUMN_CHARS], int nums[ROWS][COLUMNS]) {
 
     int o = 0, p = 0; //graphics array counters
     int i;
@@ -116,37 +148,37 @@ void initGraphics(char graphics[ROW_CHARS][COLUMN_CHARS], int nums[ROWS][COLUMNS
                     int _k = (k == 0 ? ZERO_MASK : 0) | (k == COLUMNS - 1 ? END_MASK : 0);
                     int _l = (l == 0 ? ZERO_MASK : 0) | (l == (k == 0 ? ROOM_WIDTH + 2 : ROOM_WIDTH + 1) - 1 ? END_MASK : 0);
 
-                    char c;
+                    char *c;
 
-                    if(_i & ZERO_MASK && _j & ZERO_MASK && _k & ZERO_MASK && _l & ZERO_MASK) c = 201; //top left corner
+                    if(_i & ZERO_MASK && _j & ZERO_MASK && _k & ZERO_MASK && _l & ZERO_MASK) c = "╔"; //top left corner
 
-                    else if(_i & ZERO_MASK && _j & ZERO_MASK && _k & END_MASK && _l & END_MASK) c = 187; //top right corner
+                    else if(_i & ZERO_MASK && _j & ZERO_MASK && _k & END_MASK && _l & END_MASK) c = "╗"; //top right corner
 
-                    else if(_i & END_MASK && _j & END_MASK && _k & ZERO_MASK && _l & ZERO_MASK) c = 200; //bottom left corner
+                    else if(_i & END_MASK && _j & END_MASK && _k & ZERO_MASK && _l & ZERO_MASK) c = "╚"; //bottom left corner
 
-                    else if(_i & END_MASK && _j & END_MASK && _k & END_MASK && _l & END_MASK) c = 188; //bottom right corner
+                    else if(_i & END_MASK && _j & END_MASK && _k & END_MASK && _l & END_MASK) c = "╝"; //bottom right corner
 
-                    else if(_i & ZERO_MASK && _j & ZERO_MASK && !(_k & END_MASK) && _l & END_MASK) c = 203; //top connector
+                    else if(_i & ZERO_MASK && _j & ZERO_MASK && !(_k & END_MASK) && _l & END_MASK) c = "╦"; //top connector
 
-                    else if(!(_i & END_MASK) && _j & END_MASK && _k & ZERO_MASK && _l & ZERO_MASK) c = 204; //left connector
+                    else if(!(_i & END_MASK) && _j & END_MASK && _k & ZERO_MASK && _l & ZERO_MASK) c = "╠"; //left connector
 
-                    else if(!(_i & END_MASK) && _j & END_MASK && !(_k & END_MASK) && _l & END_MASK) c = 206; //mid connector
+                    else if(!(_i & END_MASK) && _j & END_MASK && !(_k & END_MASK) && _l & END_MASK) c = "╬"; //mid connector
 
-                    else if(!(_i & END_MASK) && _j & END_MASK && _k & END_MASK && _l & END_MASK) c = 185; //right connector
+                    else if(!(_i & END_MASK) && _j & END_MASK && _k & END_MASK && _l & END_MASK) c = "╣"; //right connector
 
-                    else if(_i & END_MASK && _j & END_MASK && !(_k & END_MASK) && _l & END_MASK) c = 202; //bottom connector
+                    else if(_i & END_MASK && _j & END_MASK && !(_k & END_MASK) && _l & END_MASK) c = "╩"; //bottom connector
 
-                    else if(_i & ZERO_MASK && _j & ZERO_MASK && !(_l & END_MASK)) c = 205; //first column's horizontal line
+                    else if(_i & ZERO_MASK && _j & ZERO_MASK && !(_l & END_MASK)) c = "═"; //first column's horizontal line
 
-                    else if(_j & END_MASK && !(_l & END_MASK)) c = 205; //not first column's horizontal line
+                    else if(_j & END_MASK && !(_l & END_MASK)) c = "═"; //not first column's horizontal line
 
-                    else if(!(_j & END_MASK) && _k & ZERO_MASK && _l & ZERO_MASK) c = 186; //first row's vertical line
+                    else if(!(_j & END_MASK) && _k & ZERO_MASK && _l & ZERO_MASK) c = "║"; //first row's vertical line
 
-                    else if(!(_j & END_MASK) && _l & END_MASK) c = 186; //not first row's vertical line
+                    else if(!(_j & END_MASK) && _l & END_MASK) c = "║"; //not first row's vertical line
 
-                    else if(l == (k == 0 ? 1 : 0) && j == (ROOM_HEIGTH/2 + (i == 0 ? 1 : 0))) c = '\0'; //start of where number can be written
+                    else if(l == (k == 0 ? 1 : 0) && j == (ROOM_HEIGTH/2 + (i == 0 ? 1 : 0))) c = "\0"; //start of where number can be written
 
-                    else c = ' '; //within rooms but not middle; empty space
+                    else c = " "; //within rooms but not middle; empty space
 
                     //add to graphics array
                     graphics[o][p] = c;
@@ -168,27 +200,33 @@ void initGraphics(char graphics[ROW_CHARS][COLUMN_CHARS], int nums[ROWS][COLUMNS
 
 }
 
-//returns count of n's digits
-int digitsCount(int n) {
-
-    n = abs(n);
-
-    int digits = 0;
-    do {
-
-        n/=10;
-        digits++;
-
-    } while(n != 0);
-
-    return digits;
-
+//determines whether the move is executable or not (checks for out of bound moves)
+int canMove(int command, int x, int y) {
+	
+	switch(command) {
+		
+		case 0 : //left
+			return y + 1 < COLUMNS;
+		
+		case 1 : //up
+			return x + 1 < ROWS;
+		
+		case 2 : //right
+			return y - 1 >= 0;
+		
+		case 3 : //down
+			return x - 1 >= 0;
+		
+	}
+	
+	return 0; //should not reach here
+	
 }
 
 //executes the given command, checks for out of bound indexes
 //command : 0 = left, 1 = up, 2 = right, 3 = down
 //returns 1 if done the move, otherwise 0 (impossible to move)
-int move(int nums[ROWS][COLUMNS], int command, int *x, int *y) {
+int movee(int nums[ROWS][COLUMNS], int command, int *x, int *y) {
 
     if(canMove(command, *x, *y)) {
 
@@ -228,29 +266,6 @@ int move(int nums[ROWS][COLUMNS], int command, int *x, int *y) {
 
 }
 
-//determines whether the move is executable or not (checks for out of bound moves)
-int canMove(int command, int x, int y) {
-
-    switch(command) {
-
-        case 0 : //left
-            return y + 1 < COLUMNS;
-
-        case 1 : //up
-            return x + 1 < ROWS;
-
-        case 2 : //right
-            return y - 1 >= 0;
-
-        case 3 : //down
-            return x - 1 >= 0;
-
-    }
-
-    return 0; //should not reach here
-
-}
-
 //checks the board for winning condition
 //returns 1 if the board is sorted, otherwise 0
 int isSorted(int nums[ROWS][COLUMNS]) {
@@ -286,7 +301,7 @@ void shuffleNums(int nums[ROWS][COLUMNS], int *x, int *y) {
         int i;
         for(i = 0; i < SHUFFLE_MOVES; i++) {
 
-            while(!move(nums, rand()%4, x, y)); //guarantees the move
+            while(!movee(nums, rand() % 4, x, y)); //guarantees the move
 
         }
 
@@ -295,14 +310,14 @@ void shuffleNums(int nums[ROWS][COLUMNS], int *x, int *y) {
 }
 
 //returns : 75 = 0 = left, 72 = 1 = up, 77 = 2 = right, 80 = 3 = down, -1 = non arrow key
-int charToCommand(char c) {
+int charToCommand(int c) {
 
     switch(c) {
 
-        case 75 : return 0;
-        case 72 : return 1;
-        case 77 : return 2;
-        case 80 : return 3;
+        case KEY_LEFT : return 0;
+        case KEY_UP : return 1;
+        case KEY_RIGHT : return 2;
+        case KEY_DOWN : return 3;
 
     }
 
@@ -312,16 +327,16 @@ int charToCommand(char c) {
 //on win condition
 void win(long timer, int moves) {
 
-    system("cls");
-    printf("\n\nCongratulations!\n\nWon in %d seconds by %d moves!\n", timer, moves);
+    clear_screen();
+    printf("\r\n\nCongratulations!\r\n\nWon in %d seconds by %d moves!\r\n", timer, moves);
 
 }
 
 //on lose condition
 void lose() {
 
-    system("cls");
-    printf("\n\nLet's find your limits!\n\n");
+    clear_screen();
+    printf("\r\n\nLet's find your limits!\r\n\n");
 
 }
 
@@ -337,17 +352,35 @@ void updateExtras(long timer, int moves, char extras[]) {
 
     if(TIME_LIMIT > 0) {
 
-        sprintf(extras, "\nTime remaining = %d\n\nMoves done = %d", TIME_LIMIT - timer, moves);
+        sprintf(extras, "\r\nTime remaining = %d\r\n\nMoves done = %d\r\n", TIME_LIMIT - timer, moves);
 
     } else {
 
-        sprintf(extras, "\nMoves done = %d", moves);
+        sprintf(extras, "\r\nMoves done = %d", moves);
 
     }
 
 }
 
+void sleep_ms(const long ms) {
+	SLEEP_MS(ms);
+}
+
+int kbhit() {
+	const int c = getch();
+	if (c != ERR) {
+		ungetch(c);
+		return 1;
+	} else return 0;
+}
+
 int main() {
+	initscr();
+	noecho();
+	nl();
+	keypad(stdscr, TRUE);
+	cbreak();
+	nodelay(stdscr, TRUE);
 
     system("chcp 850"); //support for ASCII characters
     srand(time(NULL)); //for absolute random
@@ -357,7 +390,7 @@ int main() {
     int x = ROWS-1, y = COLUMNS-1; //position of the empty room
     shuffleNums(nums, &x, &y);
 
-    char graphics[ROW_CHARS][COLUMN_CHARS]; //graphics array
+    char* graphics[ROW_CHARS][COLUMN_CHARS]; //graphics array
     initGraphics(graphics, nums);
 
     char extras[EXTRAS_SIZE] = ""; //extra strings to be always printed after the board
@@ -374,15 +407,18 @@ int main() {
         //save the start time
         long start_time = currentTimeSeconds();
 
-        while(_kbhit()) { //a key was pressed
+        while(kbhit()) { //a key was pressed
 
-            char key = _getch();
+            int key = getch();
 
             switch(key) { //key press handler
 
-                case AKCCM : //an arrow key
+				case KEY_LEFT:
+				case KEY_RIGHT:
+				case KEY_DOWN:
+				case KEY_UP: //an arrow key
 
-                    if(move(nums, charToCommand(_getch()), &x, &y)) {
+                    if(movee(nums, charToCommand(key), &x, &y)) {
 
                         moves++;
 
@@ -400,7 +436,7 @@ int main() {
 
                     break;
 
-                case EKCC : //the "Enter" key, reset the game
+                case EKC : //the "Enter" key, reset the game
 
                     timer = 0;
                     moves = 0;
@@ -415,7 +451,7 @@ int main() {
 
         }
 
-        Sleep(INFINITE_LOOP_SLEEP_TIME);
+        sleep_ms(INFINITE_LOOP_SLEEP_TIME);
 
         //add to the timer
         long passed_time = currentTimeSeconds() - start_time;
@@ -442,6 +478,7 @@ int main() {
 
     }
 
+	endwin();
     return 0;
 
 }
