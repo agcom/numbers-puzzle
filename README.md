@@ -2,7 +2,7 @@
 
 # Numbers Puzzle
 
-Sliding numbers puzzle game in C, running on Windows cmd.exe.
+Sliding numbers puzzle game in C, running on terminal.
 
 This game was my midterm project for the **computer fundamentals and programming** university course, originally made in **late 2018**.
 
